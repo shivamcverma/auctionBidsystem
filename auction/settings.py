@@ -104,6 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
+DJANGO_SETTINGS_MODULE = 'actionsystem.settings'
+
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
