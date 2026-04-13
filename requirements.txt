@@ -3,4 +3,4 @@ gunicorn
 whitenoise
 python-dotenv
 psycopg2-binary
-Pillow==<version>
+pillow==11.3.0
