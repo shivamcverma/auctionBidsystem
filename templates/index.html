@@ -1,0 +1,321 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <script>
+    // Immediate Theme Initialization to prevent "flash" of unstyled variables
+    (function () {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">⚡ <span>Bid</span>Vault</div>
+    <div class="nav-links">
+      <a href="{% url 'login_page' %}?page=bid">Live Auctions</a>
+      <a href="#categories">Categories</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="{% url 'login_page' %}?page=seller">Sell</a>
+      {% if request.user.is_authenticated %}
+      <button class="nav-cta" onclick="window.location.href='{% url 'logout' %}';">Logout</button>
+      {% else %}
+      <button class="nav-cta" onclick="window.location.href='{% url 'login_page' %}?page=auth&tab=login'">Sign In</button>
+      {% endif %}
+    </div>
+    <div class="hamburger">
+      <span></span><span></span><span></span>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-left">
+      <div class="hero-badge">
+        <div class="hero-badge-dot"></div> Live Auction Platform
+      </div>
+      <h1 class="hero-title">Where Rare <em>Treasures</em><br>Find New Homes</h1>
+      <p class="hero-sub">Participate in transparent, real-time auctions. Bid on exclusive art, antiques, jewellery, and
+        collectibles — from anywhere in the world.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" onclick="window.location.href='{% url 'login_page' %}?page=bid'">Explore Live Bids</button>
+        <button class="btn-secondary" onclick="window.location.href='{% url 'login_page' %}?page=auth&tab=register'">Register to
+          Sell</button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-val">₹4.2<span>Cr+</span></div>
+          <div class="stat-label">Total Volume</div>
+        </div>
+        <div>
+          <div class="stat-val">18<span>K+</span></div>
+          <div class="stat-label">Registered Bidders</div>
+        </div>
+        <div>
+          <div class="stat-val">340<span>+</span></div>
+          <div class="stat-label">Items Sold</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="featured-card">
+        <div class="card-img">
+          <div class="card-img-art">
+            <span class="hammer-icon">🏺</span>
+          </div>
+          <div class="card-live-badge">
+            <div class="live-dot"></div> Live
+          </div>
+          <div class="card-lot">Lot #0042</div>
+        </div>
+        <div class="card-body">
+          <div class="card-cat">Antique · Mughal Era</div>
+          <div class="card-title">18th Century Brass Hookah Base with Intricate Engravings</div>
+          <div class="card-bids-row">
+            <div>
+              <div class="bid-info-label">Current Bid</div>
+              <div class="bid-info-val">₹82,000</div>
+            </div>
+            <div class="bid-count"><strong>14</strong> bids placed</div>
+          </div>
+        </div>
+        <div class="timer-bar">
+          <div class="timer-label">Closing in</div>
+          <div class="timer-val" id="hero-timer" data-endtime="{{ today|date:'c'|default:'2026-10-10T20:00:00Z' }}">02 : 34 : 18</div>
+        </div>
+        <button class="bid-btn" onclick="window.location.href='{% url 'login_page' %}?page=bid&id=42'">Place Your Bid →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <div class="ticker-item">Mughal Miniature <span>₹1.8L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">19th C. Ivory Chess Set <span>₹3.4L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Vintage Leica M3 <span>₹95K</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Rajasthani Silver Anklet <span>₹42K</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">1962 Bengal School Oil <span>₹6.7L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Teak Writing Desk <span>₹1.1L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Mughal Miniature <span>₹1.8L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">19th C. Ivory Chess Set <span>₹3.4L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Vintage Leica M3 <span>₹95K</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Rajasthani Silver Anklet <span>₹42K</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">1962 Bengal School Oil <span>₹6.7L</span> <span class="ticker-sep">◆</span></div>
+      <div class="ticker-item">Teak Writing Desk <span>₹1.1L</span> <span class="ticker-sep">◆</span></div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section>
+    <div class="section-label">Process</div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <div class="section-title">Simple. Secure.<br>Transparent.</div>
+      </div>
+      <div class="section-sub">From registration to final gavel — our process is designed for trust and ease.</div>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon">👤</div>
+        <div class="step-title">Register & Verify</div>
+        <div class="step-text">Create a free account. Verify your identity in minutes. Get access to all upcoming
+          auctions.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon">🔍</div>
+        <div class="step-title">Browse Lots</div>
+        <div class="step-text">Explore curated listings with high-resolution images, provenance details, and expert
+          assessments.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon">🔨</div>
+        <div class="step-title">Bid in Real-Time</div>
+        <div class="step-text">Place live bids or set a maximum proxy bid. Watch the auction unfold with live updates.
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon">📦</div>
+        <div class="step-title">Win & Receive</div>
+        <div class="step-text">Secure payment processing followed by insured nationwide delivery right to your door.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIVE AUCTIONS -->
+  <section style="background:var(--dark2);">
+    <div class="auctions-header">
+      <div>
+        <div class="section-label">Featured</div>
+        <div class="section-title">Live Right Now</div>
+      </div>
+      <button class="btn-secondary" style="white-space:nowrap;" onclick="window.location.href='{% url 'login_page' %}?page=bid'">View
+        All Lots →</button>
+    </div>
+    <div class="auctions-grid">
+      {% for item in live_auctions %}
+      <div class="auction-card" onclick="window.location.href='{% url 'login_page' %}?page=bid&id={{ item.id }}'">
+        <div class="auction-img" style="background:var(--dark);">
+          {% if item.image %}
+          <img src="{{ item.image.url }}" alt="{{ item.title }}" style="width:100%;height:100%;object-fit:cover;">
+          {% else %}
+          🖼️
+          {% endif %}
+          <div class="auction-img-overlay"></div>
+        </div>
+        <div class="auction-body">
+          <div class="auction-cat">{{ item.category.name }}</div>
+          <div class="auction-title">{{ item.title }}</div>
+          <div class="auction-footer">
+            <div class="auction-price">₹{{ item.current_bid|default:item.starting_price }}</div>
+            <div class="auction-timer" data-endtime="{{ item.end_time|date:'c' }}">⏱ Loading...</div>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <p style="color:var(--text3); grid-column: 1/-1; text-align: center;">No live auctions at the moment. Check back soon!</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="cat-section">
+    <div class="section-label">Browse</div>
+    <div class="section-title">Explore Categories</div>
+    <div class="cat-grid" id="categories">
+      {% for cat in categories %}
+      <div class="cat-item">
+        <div class="cat-emoji">✨</div>
+        <div class="cat-name">{{ cat.name }}</div>
+        <div class="cat-count">{{ cat.items.count }} lots</div>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <div class="trust-banner">
+    <div class="section-label" style="text-align:center;">Why BidVault</div>
+    <h2>Bid with Absolute Confidence</h2>
+    <p>Every lot is verified, every transaction protected.</p>
+    <div class="trust-features">
+      <div>
+        <div class="trust-feature-icon">🔐</div>
+        <div class="trust-feature-title">Verified Sellers Only</div>
+        <div class="trust-feature-text">Every seller goes through a rigorous documentation and identity check before
+          listing any lot on our platform.</div>
+      </div>
+      <div>
+        <div class="trust-feature-icon">📋</div>
+        <div class="trust-feature-title">Expert Provenance Reports</div>
+        <div class="trust-feature-text">Our in-house specialists prepare detailed provenance and condition reports for
+          each item listed.</div>
+      </div>
+      <div>
+        <div class="trust-feature-icon">🚚</div>
+        <div class="trust-feature-title">Insured Delivery</div>
+        <div class="trust-feature-text">All winning lots are packaged by specialists and shipped with full insurance
+          coverage across India.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div>
+        <div class="footer-brand" onclick="window.location.href='#'" style="cursor:pointer;">⚡ BidVault</div>
+        <div class="footer-tagline">India's premier online auction house for art, antiques, jewellery & rare
+          collectibles. Connecting discerning buyers with exceptional pieces since 2024.</div>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Auctions</div>
+        <a href="{% url 'login_page' %}?page=bid">Live Lots</a>
+        <a href="#">Upcoming</a>
+        <a href="#">Past Results</a>
+        <a href="#">Featured</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Sellers</div>
+        <a href="{% url 'login_page' %}?page=seller">Consign an Item</a>
+        <a href="#">Seller Guide</a>
+        <a href="#">Fees & Terms</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-col-title">Company</div>
+        <a href="#">About Us</a>
+        <a href="#">Press</a>
+        <a href="#">Careers</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2025 BidVault. All rights reserved.</span>
+      <div class="footer-socials">
+        <a href="#">Instagram</a>
+        <a href="#">Twitter / X</a>
+        <a href="#">LinkedIn</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Real-Time Timers for all items with data-endtime
+    function updateTimers() {
+      const timers = document.querySelectorAll('[data-endtime]');
+      timers.forEach(timer => {
+        const endTimeStr = timer.dataset.endtime;
+        if (!endTimeStr) return;
+        
+        const endTime = new Date(endTimeStr).getTime();
+        const now = new Date().getTime();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+          timer.textContent = "Auction Ended";
+          return;
+        }
+
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timer.textContent = `${h.toString().padStart(2, '0')} : ${m.toString().padStart(2, '0')} : ${s.toString().padStart(2, '0')}`;
+      });
+    }
+    
+    setInterval(updateTimers, 1000);
+    updateTimers();
+
+    // Mobile Menu Toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+    }
+  </script>
+</body>
+
+</html>

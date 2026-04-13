@@ -1,0 +1,773 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BidVault — Auction System</title>
+  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'css/index.css' %}">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+
+  <!-- ===================== TOAST ===================== -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toast-icon">✓</span>
+    <span id="toast-text">Action completed</span>
+  </div>
+
+  <!-- ===================== NAV ===================== -->
+  <nav>
+    <div class="nav-logo" onclick="window.location.href='/'">⚡ <span>Bid</span>Vault</div>
+    <div class="nav-links">
+      <a href="javascript:void(0)" id="nav-bid" onclick="showPage('bid')">Live Auctions</a>
+      <a href="/#categories">Categories</a>
+      <a href="/#how-it-works">How It Works</a>
+      <a href="javascript:void(0)" id="nav-seller" onclick="showPage('seller')">Sell</a>
+
+      {% if request.user.is_authenticated %}
+      <button class="nav-cta" onclick="window.location.href='{% url 'logout' %}';">Logout</button>
+      {% else %}
+      <button class="nav-cta" id="nav-auth" onclick="showPage('auth')">Sign In</button>
+      {% endif %}
+    </div>
+
+    <!-- Theme Toggle & Hamburger -->
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <span class="theme-icon theme-icon-moon">🌙</span>
+        <span class="theme-icon theme-icon-sun">☀️</span>
+      </div>
+      <div class="hamburger">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===================== PAGE 1: AUTH ===================== -->
+  <div class="page" id="page-auth">
+    <div class="auth-left">
+      <div class="auth-left-grid"></div>
+      <div class="auth-left-glow"></div>
+      <div class="auth-left-content">
+        <div class="label" style="margin-bottom:1.2rem;">⚡ BidVault — Premium Auction</div>
+        <div class="auth-left-tagline">Bid. Win.<br><em>Own the Rare.</em></div>
+        <p class="auth-left-sub">Join thousands of collectors and connoisseurs on India's most trusted platform for rare
+          art, antiques, and collectibles.</p>
+      </div>
+      <div class="auth-left-stats">
+        <div>
+          <div class="auth-stat-val">18<span>K+</span></div>
+          <div class="auth-stat-label">Bidders</div>
+        </div>
+        <div>
+          <div class="auth-stat-val">₹4.2<span>Cr</span></div>
+          <div class="auth-stat-label">Volume</div>
+        </div>
+        <div>
+          <div class="auth-stat-val">340<span>+</span></div>
+          <div class="auth-stat-label">Sold</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="auth-box">
+        {% if request.user.is_authenticated %}
+        <div style="text-align: center; padding: 2rem;">
+          <div class="auth-left-tagline" style="font-size: 2.5rem; margin-bottom: 1rem;">Welcome, <em>{{
+              request.user.first_name|default:request.user.username }}</em></div>
+          <p style="color: var(--text3); margin-bottom: 2rem;">You are currently signed in to your BidVault account.</p>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <button class="btn-primary" onclick="showPage('bid');">Go to Live Auctions →</button>
+            <button class="btn-outline" onclick="showPage('seller')">Go to Seller Dashboard</button>
+            <div class="form-divider" style="margin: 1.5rem 0;"><span>or</span></div>
+            <button class="btn-nav" style="border: 1px solid var(--border); width: 100%;"
+              onclick="window.location.href='{% url 'logout' %}';">
+              Logout from Account
+            </button>
+          </div>
+        </div>
+        {% else %}
+        <div class="auth-tabs">
+          {% if user.is_authenticated %}
+          <a href="{% url 'logout' %}">Logout</a>
+          {% else %}
+          <button class="auth-tab active" onclick="switchTab('login', this)">Sign In</button>
+          {% endif %}
+          <button class="auth-tab" onclick="switchTab('register', this)">Create Account</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form action="{% url 'login' %}" method="post" id="form-login" class="auth-form active">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <div class="auth-social">
+            <button class="btn-social" type="button">🌐 Google</button>
+            <button class="btn-social" type="button">📘 Facebook</button>
+          </div>
+          <div class="form-divider"><span>or continue with email</span></div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-input" placeholder="Enter your username" name="username" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" placeholder="Enter your password" name="password" required>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="remember">
+            <label for="remember">Remember me for 30 days</label>
+          </div>
+          <button class="btn-primary btn-full" type="submit">Sign In to BidVault →</button>
+          <div class="auth-note" style="margin-top:1rem;"><a href="#">Forgot your password?</a></div>
+        </form>
+
+        <!-- REGISTER FORM -->
+        <form action="{% url 'signup' %}" method="post" id="form-register" class="auth-form">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input type="text" class="form-input" placeholder="Enter Your Name" name="f_name" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input type="text" class="form-input" placeholder="Enter Your Last Name" name="l_name" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" placeholder="you@example.com" name="email" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username (Optional)</label>
+            <input type="text" class="form-input" placeholder="Choose a username" name="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" placeholder="Min. 8 characters" name="password" required>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" id="agree" required>
+            <label for="agree">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy
+                Policy</a></label>
+          </div>
+          <button type="submit" class="btn-primary btn-full">Create My Account →</button>
+          <div class="auth-note" style="margin-top:1.5rem;">
+            🔒 256-bit SSL encryption. Your data is always secure.
+          </div>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 2: BIDDING ROOM ===================== -->
+  <div class="page" id="page-bid">
+    <div class="bid-room-layout">
+      <!-- MAIN CONTENT -->
+      <div class="bid-main">
+        <!-- Item Header -->
+        <div
+          style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:0.8rem;">
+          <div style="display:flex;align-items:center;gap:0.8rem;">
+            <div class="live-badge">
+              <div class="live-dot"></div> Live Now
+            </div>
+            <span style="font-size:0.72rem;color:var(--text3);letter-spacing:0.1em;">LOT #{{
+              auction.id|stringformat:"04d"|default:"0042" }}</span>
+          </div>
+          <div style="display:flex;gap:0.6rem;">
+            <button class="btn-outline" style="padding:0.4rem 0.9rem;font-size:0.7rem;">❤️ Watch</button>
+            <button class="btn-outline" style="padding:0.4rem 0.9rem;font-size:0.7rem;">↗ Share</button>
+          </div>
+        </div>
+        {% if auction %}
+        <div class="bid-item-header">
+          <div class="bid-item-img">
+            <div class="bid-item-img-thumb">
+              {% if auction.image %}
+              <img src="{{ auction.image.url }}" alt="{{ auction.title }}"
+                style="width:100%;height:100%;object-fit:cover;border-radius:1rem;">
+              {% else %}
+              🏺
+              {% endif %}
+            </div>
+          </div>
+          <div class="bid-item-meta">
+            <div class="bid-cat">{{ auction.category.name }}</div>
+            <div class="bid-item-title">{{ auction.title }}</div>
+            <p class="bid-item-desc">{{ auction.description }}</p>
+            <div class="bid-tags">
+              <span class="bid-tag">{{ auction.category.name }}</span>
+              <span class="bid-tag">Verified</span>
+            </div>
+            <div class="bid-meta-row">
+              <div class="bid-meta-item">
+                <div class="bid-meta-label">Seller</div>
+                <div class="bid-meta-val">{{ auction.seller.get_full_name|default:auction.seller.username }} ✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Price Section -->
+        <div class="bid-price-section">
+          <div class="bid-price-block">
+            <div class="lbl">Current Bid</div>
+            <div class="val gold" id="current-bid">₹{{ auction.current_bid|default:auction.starting_price }}</div>
+          </div>
+          <div class="bid-price-block">
+            <div class="lbl">Starting Price</div>
+            <div class="val">₹{{ auction.starting_price }}</div>
+          </div>
+          <div class="bid-price-block">
+            <div class="lbl">Closing In</div>
+            <div class="bid-timer-big" id="bid-countdown" data-endtime="{{ auction.end_time|date:'c' }}">Loading...
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div
+          style="text-align: center; padding: 4rem; background: var(--dark1); border-radius: 2rem; border: 1px dashed var(--border);">
+          <div style="font-size: 3rem; margin-bottom: 1rem;">🔍</div>
+          <h3 style="font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; margin-bottom: 0.5rem;">No Auction
+            Selected</h3>
+          <p style="color: var(--text3); margin-bottom: 1.5rem;">Please select an item from the home page or dashboard
+            to see details.</p>
+          <button class="btn-primary" onclick="window.location.href='/'">Browse Live Auctions</button>
+        </div>
+        {% endif %}
+
+        {% if auction %}
+        <!-- Bid Action -->
+        <div class="bid-action-area">
+          <div class="bid-action-title">Place Your Bid</div>
+          {% if request.user.is_authenticated %}
+          <div class="bid-input-row" style="position: relative;">
+            <div class="bid-prefix">₹</div>
+            <input type="number" class="form-input" id="bid-input" placeholder="Enter amount"
+              style="padding-left: 2.5rem; margin-bottom: 0;">
+            <button class="btn-primary" onclick="submitBid({{ auction.id }})" style="height: 3.4rem;">Place Bid
+              →</button>
+          </div>
+          {% else %}
+          <div
+            style="text-align: center; padding: 1rem; background: var(--dark2); border-radius: 1rem; border: 1px dashed var(--border);">
+            <p style="color: var(--text3); font-size: 0.8rem; margin-bottom: 0.8rem;">You must be signed in to place a
+              bid.</p>
+            <button class="btn-outline" onclick="showPage('auth')">Sign In Now</button>
+          </div>
+          {% endif %}
+          <div class="bid-quick-bids">
+            <span
+              style="font-size:0.68rem;color:var(--text3);align-self:center;letter-spacing:0.08em;text-transform:uppercase;">Quick:</span>
+            <button class="quick-bid-btn"
+              onclick="setQuickBid({{ auction.current_bid|default:auction.starting_price|add:1000 }})">+ ₹1,000</button>
+            <button class="quick-bid-btn"
+              onclick="setQuickBid({{ auction.current_bid|default:auction.starting_price|add:5000 }})">+ ₹5,000</button>
+            <button class="quick-bid-btn"
+              onclick="setQuickBid({{ auction.current_bid|default:auction.starting_price|add:10000 }})">+
+              ₹10,000</button>
+          </div>
+          <div class="bid-warning">⚠️ Minimum increment: ₹1,000. By bidding you agree to our auction terms.</div>
+        </div>
+
+        <!-- Bid History -->
+        <div class="bid-history">
+          <div class="bid-history-title">Bid History — <span id="bid-count">{{ bid_history.count|default:"0" }}</span>
+            Bids</div>
+          <div id="bid-history-list">
+            {% for bid in bid_history %}
+            <div class="bid-history-row {% if forloop.first %}top-bid{% endif %}">
+              <div class="bid-history-user">
+                <div class="bid-avatar">{{ bid.user.username|slice:":2"|upper }}</div>
+                <div>
+                  <div class="bid-history-name">{{ bid.user.username }}</div>
+                  <div class="bid-history-time">{{ bid.timestamp|timesince }} ago {% if forloop.first %}· Top Bidder{% endif %}</div>
+                </div>
+              </div>
+              <div class="bid-history-amount">₹{{ bid.amount }}</div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 2rem; color: var(--text3);">No bids yet. Be the first to bid!</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+
+      <!-- SIDEBAR -->
+      <div class="bid-sidebar">
+        <div class="bid-sidebar-header">
+          <div class="bid-sidebar-title">Live Chat</div>
+          <div class="bid-live-count">
+            <div class="live-count-dot"></div> 47 watching
+          </div>
+        </div>
+
+        <div class="bid-chat" id="bid-chat">
+          <div class="chat-msg system">
+            <div class="chat-text">🔔 Auction started</div>
+          </div>
+          <div class="chat-msg">
+            <div class="chat-msg-header"><span class="chat-name">Collector_K</span><span class="chat-time">2m</span>
+            </div>
+            <div class="chat-text">Beautiful selection of items today!</div>
+          </div>
+        </div>
+
+        <div class="bid-chat-input">
+          <input type="text" class="chat-field" id="chat-input" placeholder="Type a message…"
+            onkeydown="if(event.key==='Enter')sendChat()">
+          <button class="chat-send" onclick="sendChat()">→</button>
+        </div>
+
+        <div class="bid-other-lots">
+          <div class="bid-other-title">More Auctions</div>
+          {% for item in auctions %}
+          <div class="other-lot-item" onclick="window.location.href='?page=bid&id={{ item.id }}'">
+            <div class="other-lot-thumb">{% if item.image %}🖼️{% else %}📦{% endif %}</div>
+            <div>
+              <div class="other-lot-name">{{ item.title|truncatechars:30 }}</div>
+              <div class="other-lot-price">₹{{ item.current_bid|default:item.starting_price }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PAGE 3: SELLER DASHBOARD ===================== -->
+  <div class="page" id="page-seller">
+    <div class="seller-layout">
+
+      <!-- Sidebar -->
+      <div class="seller-sidebar">
+        <div class="seller-profile">
+          <div class="seller-avatar">{{ request.user.username|slice:":2"|upper }}</div>
+          <div class="seller-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="seller-role">Verified Collector</div>
+          <div class="seller-verified">✓ Member since {{ request.user.date_joined|date:"Y" }}</div>
+        </div>
+        <div class="sidebar-nav">
+          <div class="sidebar-section-label">Main</div>
+          <div class="sidebar-nav-item active" onclick="switchDashboardTab('listings', this)"><span class="sidebar-nav-icon">🔨</span>  My Listings</div>
+          <div class="sidebar-nav-item" onclick="switchDashboardTab('bids', this)"><span class="sidebar-nav-icon">📦</span> My Bids
+          </div>
+          <div class="sidebar-section-label">Account</div>
+          <div class="sidebar-nav-item" onclick="window.location.href='{% url 'logout' %}'"><span
+              class="sidebar-nav-icon">🚪</span> Sign Out
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="seller-main">
+        <div class="seller-page-header">
+          <div>
+            <div class="label">Dashboard</div>
+            <div class="seller-page-title">Welcome back, {{ request.user.first_name|default:request.user.username }}
+            </div>
+            <div class="seller-page-sub">{{ today|date:"l, d F Y" }} · You have {{ listings.count|default:"0" }} active
+              listings
+            </div>
+          </div>
+          <button class="btn-primary" onclick="document.getElementById('new-listing-modal').classList.add('open')">+ New
+            Listing</button>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-label">Total Volume</div>
+            <div class="stat-card-val gold">₹{{ listings.count|default:"0"|add:2 }}L</div>
+            <div class="stat-card-change change-up">↑ Trending Up</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Active Listings</div>
+            <div class="stat-card-val">{{ listings.count|default:"0" }}</div>
+            <div class="stat-card-change change-up">↑ Live Auctions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Your Bids</div>
+            <div class="stat-card-val green">{{ my_bids.count|default:"0" }}</div>
+            <div class="stat-card-change">Active participation</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Profile Strength</div>
+            <div class="stat-card-val">Verified ★</div>
+            <div class="stat-card-change">Secure Account</div>
+          </div>
+        </div>
+
+        <!-- Listings Section -->
+        <div class="listings-section dashboard-tab-content active" id="dashboard-listings">
+          <div class="listings-header">
+            <div class="listings-title">Active &amp; Recent Listings</div>
+            <div style="display:flex;gap:0.6rem;">
+              <select class="form-input" style="padding:0.4rem 0.8rem;font-size:0.72rem;width:auto;">
+                <option>All Status</option>
+                <option>Live</option>
+                <option>Closed</option>
+              </select>
+            </div>
+          </div>
+
+          <table class="listings-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Status</th>
+                <th>Start Price</th>
+                <th>Current Bid</th>
+                <th>Ends</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for item in listings %}
+              <tr>
+                <td>
+                  <div class="lot-thumb-cell">
+                    <div class="lot-thumb">{% if item.image %}🖼️{% else %}📦{% endif %}</div>
+                    <div>
+                      <div class="lot-name">{{ item.title|truncatechars:25 }}</div>
+                      <div class="lot-id">ID #{{ item.id|stringformat:"04d" }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  {% if item.end_time > today %}
+                  <span class="status-badge status-live">Live</span>
+                  {% else %}
+                  <span class="status-badge status-sold">Closed</span>
+                  {% endif %}
+                </td>
+                <td>₹{{ item.starting_price }}</td>
+                <td>₹{{ item.current_bid|default:"No bids" }}</td>
+                <td>{{ item.end_time|timesince }} left</td>
+                <td>
+                  <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;"
+                    onclick="window.location.href='?page=bid&id={{ item.id }}'">View</button>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" style="text-align:center; padding: 2rem; color: var(--text3);">
+                  No listings found. Start selling today!
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Bids Section -->
+        <div class="listings-section dashboard-tab-content" id="dashboard-bids" style="display:none;">
+          <div class="listings-header">
+            <div class="listings-title">Your Bidding History</div>
+          </div>
+
+          <table class="listings-table">
+            <thead>
+              <tr>
+                <th>Auction Item</th>
+                <th>Your Bid</th>
+                <th>Status</th>
+                <th>Current High</th>
+                <th>Ends</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for bid in my_bids %}
+              <tr>
+                <td>
+                  <div class="lot-thumb-cell">
+                    <div class="lot-thumb">🔨</div>
+                    <div>
+                      <div class="lot-name">{{ bid.item.title|truncatechars:25 }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="gold">₹{{ bid.amount }}</td>
+                <td>
+                  {% if bid.amount >= bid.item.current_bid %}
+                  <span class="status-badge status-live">Winning</span>
+                  {% else %}
+                  <span class="status-badge status-sold">Outbid</span>
+                  {% endif %}
+                </td>
+                <td>₹{{ bid.item.current_bid }}</td>
+                <td>{{ bid.item.end_time|timesince }}</td>
+                <td>
+                  <button class="btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.7rem;"
+                    onclick="window.location.href='?page=bid&id={{ bid.item.id }}'">View Lot</button>
+                </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" style="text-align:center; padding: 2rem; color: var(--text3);">
+                  You haven't placed any bids yet. Go explore live auctions!
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== NEW LISTING MODAL ===================== -->
+  <div class="modal-overlay" id="new-listing-modal" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">Create New Listing</div>
+        <button class="modal-close"
+          onclick="document.getElementById('new-listing-modal').classList.remove('open')">✕</button>
+      </div>
+      <form action="{% url 'add_product' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="upload-zone" onclick="document.getElementById('image-upload').click()">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Click to upload product photo</div>
+            <input type="file" name="image" id="image-upload" style="display:none;" onchange="updateUploadText(this)">
+            <div id="file-name-display" style="font-size:0.68rem;color:var(--gold);margin-top:0.3rem;">JPG, PNG up to
+              10MB.</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Item Title</label>
+            <input type="text" name="title" class="form-input" placeholder="e.g. 18th Century Mughal Brass Hookah Base"
+              required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-input" required>
+                {% for cat in categories %}
+                <option value="{{ cat.id }}">{{ cat.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Starting Price (₹)</label>
+              <input type="number" name="starting_price" class="form-input" placeholder="45000" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Auction End Time</label>
+              <input type="datetime-local" name="end_time" class="form-input" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Description & History</label>
+            <textarea name="description" class="form-input" rows="4"
+              placeholder="Describe the item's history, dimensions, and any notable features…" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-outline"
+            onclick="document.getElementById('new-listing-modal').classList.remove('open')">Cancel</button>
+          <button type="submit" class="btn-primary">Submit for Review →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <script>
+    // Config & State
+    const csrftoken = '{{ csrf_token }}';
+
+    // Page Switching
+    function showPage(id) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const activePage = document.getElementById('page-' + id);
+      if (activePage) activePage.classList.add('active');
+
+      document.querySelectorAll('.nav-links a, .nav-links .nav-cta').forEach(b => b.classList.remove('active'));
+      const navBtn = document.getElementById('nav-' + id);
+      if (navBtn) navBtn.classList.add('active');
+
+      // Update URL without reload
+      const url = new URL(window.location);
+      url.searchParams.set('page', id);
+      window.history.pushState({}, '', url);
+
+      // Close mobile menu
+      const hamburger = document.querySelector('.hamburger');
+      const navLinks = document.querySelector('.nav-links');
+      if (hamburger && navLinks) {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      }
+    }
+
+    // Initialize Page on Load
+    window.addEventListener('load', () => {
+      const params = new URLSearchParams(window.location.search);
+      const page = params.get('page');
+      const tab = params.get('tab');
+
+      if (page) {
+        showPage(page);
+        if (page === 'auth' && tab) {
+          const tabEl = document.querySelector(`.auth-tab[onclick*="${tab}"]`);
+          if (tabEl) switchTab(tab, tabEl);
+        }
+      } else {
+        showPage('auth');
+      }
+    });
+
+    // Auth Tabs
+    function switchTab(tab, el) {
+      document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+      el.classList.add('active');
+      const form = document.getElementById('form-' + tab);
+      if (form) form.classList.add('active');
+    }
+
+    // Theme Toggle
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('theme', next);
+    }
+
+    // Bidding Logic
+    function setQuickBid(val) {
+      const inp = document.getElementById('bid-input');
+      if (inp) inp.value = val;
+    }
+
+    function submitBid(itemId) {
+      const amount = document.getElementById('bid-input').value;
+      if (!amount) {
+        showToast('Please enter a bid amount', '⚠️');
+        return;
+      }
+
+      fetch(`/place-bid/${itemId}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `amount=${amount}`
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            showToast('Bid placed successfully!', '🎯');
+            setTimeout(() => location.reload(), 1000);
+          } else {
+            showToast(data.message, '❌');
+          }
+        });
+    }
+
+    // Real-Time Timers
+    function updateTimers() {
+      const timers = document.querySelectorAll('[data-endtime]');
+      timers.forEach(timer => {
+        const endTimeStr = timer.dataset.endtime;
+        if (!endTimeStr) return;
+
+        const endTime = new Date(endTimeStr).getTime();
+        const now = new Date().getTime();
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+          timer.textContent = "Auction Ended";
+          timer.style.color = "var(--red)";
+          return;
+        }
+
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        timer.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+      });
+    }
+
+    setInterval(updateTimers, 1000);
+    updateTimers();
+
+    // UI Helpers
+    function updateUploadText(input) {
+      const display = document.getElementById('file-name-display');
+      if (display && input.files[0]) {
+        display.textContent = "Selected: " + input.files[0].name;
+      }
+    }
+
+    function showToast(msg, icon = '✓') {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-text');
+      const iconWrap = document.getElementById('toast-icon');
+      if (toast && text && iconWrap) {
+        text.textContent = msg;
+        iconWrap.textContent = icon;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+      }
+    }
+
+    function sendChat() {
+      const input = document.getElementById('chat-input');
+      const chat = document.getElementById('bid-chat');
+      if (input && input.value.trim() !== '' && chat) {
+        const msg = document.createElement('div');
+        msg.className = 'chat-msg';
+        msg.innerHTML = `
+          <div class="chat-msg-header"><span class="chat-name">You</span><span class="chat-time">now</span></div>
+          <div class="chat-text">${input.value.trim()}</div>
+        `;
+        chat.appendChild(msg);
+        chat.scrollTop = chat.scrollHeight;
+        input.value = '';
+      }
+    }
+
+    // Sidebar Toggling
+    function switchDashboardTab(tab, el) {
+      document.querySelectorAll('.sidebar-nav-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+
+      document.querySelectorAll('.dashboard-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById('dashboard-' + tab).style.display = 'block';
+    }
+
+    // Mobile Menu Toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+      hamburger.addEventListener('click', () => {
+        hamburger.classList.toggle('active');
+        navLinks.classList.toggle('active');
+      });
+    }
+  </script>
+</body>
+
+</html>
