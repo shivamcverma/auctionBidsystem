@@ -154,6 +154,23 @@
             <label class="form-label">Password</label>
             <input type="password" class="form-input" placeholder="Min. 8 characters" name="password" required>
           </div>
+          
+          <!-- Role Selection -->
+          <div class="form-group">
+            <label class="form-label">Join as</label>
+            <div class="role-selector">
+              <input type="radio" name="role" value="bidder" id="role-bidder" checked style="display: none;">
+              <label for="role-bidder" class="role-tile">
+                <span class="role-icon">💎</span>
+                <span class="role-text">Bidder</span>
+              </label>
+              <input type="radio" name="role" value="seller" id="role-seller" style="display: none;">
+              <label for="role-seller" class="role-tile">
+                <span class="role-icon">🎨</span>
+                <span class="role-text">Seller</span>
+              </label>
+            </div>
+          </div>
           <div class="form-check">
             <input type="checkbox" id="agree" required>
             <label for="agree">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy
@@ -251,6 +268,7 @@
         <div class="bid-action-area">
           <div class="bid-action-title">Place Your Bid</div>
           {% if request.user.is_authenticated %}
+          {% if request.user.profile.role == 'bidder' %}
           <div class="bid-input-row" style="position: relative;">
             <div class="bid-prefix">₹</div>
             <input type="number" class="form-input" id="bid-input" placeholder="Enter amount"
@@ -258,6 +276,12 @@
             <button class="btn-primary" onclick="submitBid({{ auction.id }})" style="height: 3.4rem;">Place Bid
               →</button>
           </div>
+          {% else %}
+          <div style="text-align: center; padding: 2rem; background: var(--dark3); border-radius: 1.5rem; border: 1px dashed var(--border);">
+            <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">🔒</div>
+            <p style="color: var(--text3); font-size: 0.9rem;">Sellers are not permitted to bid on items.</p>
+          </div>
+          {% endif %}
           {% else %}
           <div
             style="text-align: center; padding: 1rem; background: var(--dark2); border-radius: 1rem; border: 1px dashed var(--border);">
@@ -356,14 +380,16 @@
         <div class="seller-profile">
           <div class="seller-avatar">{{ request.user.username|slice:":2"|upper }}</div>
           <div class="seller-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-          <div class="seller-role">Verified Collector</div>
+          <div class="seller-role">{{ request.user.profile.role|title }}</div>
           <div class="seller-verified">✓ Member since {{ request.user.date_joined|date:"Y" }}</div>
         </div>
         <div class="sidebar-nav">
           <div class="sidebar-section-label">Main</div>
           <div class="sidebar-nav-item active" onclick="switchDashboardTab('listings', this)"><span class="sidebar-nav-icon">🔨</span>  My Listings</div>
+          {% if request.user.profile.role == 'bidder' %}
           <div class="sidebar-nav-item" onclick="switchDashboardTab('bids', this)"><span class="sidebar-nav-icon">📦</span> My Bids
           </div>
+          {% endif %}
           <div class="sidebar-section-label">Account</div>
           <div class="sidebar-nav-item" onclick="window.location.href='{% url 'logout' %}'"><span
               class="sidebar-nav-icon">🚪</span> Sign Out
@@ -378,12 +404,17 @@
             <div class="label">Dashboard</div>
             <div class="seller-page-title">Welcome back, {{ request.user.first_name|default:request.user.username }}
             </div>
-            <div class="seller-page-sub">{{ today|date:"l, d F Y" }} · You have {{ listings.count|default:"0" }} active
-              listings
+            <div class="seller-page-sub">{{ today|date:"l, d F Y" }} · 
+              {% if request.user.profile.role == 'seller' %}
+                You have {{ listings.count|default:"0" }} active listings
+              {% else %}
+                You have {{ my_bids.count|default:"0" }} active bids
+              {% endif %}
             </div>
           </div>
-          <button class="btn-primary" onclick="document.getElementById('new-listing-modal').classList.add('open')">+ New
-            Listing</button>
+          {% if request.user.profile.role == 'seller' %}
+          <button class="btn-primary" onclick="document.getElementById('new-listing-modal').classList.add('open')">+ New Listing</button>
+          {% endif %}
         </div>
 
         <!-- Stats -->
@@ -393,16 +424,29 @@
             <div class="stat-card-val gold">₹{{ listings.count|default:"0"|add:2 }}L</div>
             <div class="stat-card-change change-up">↑ Trending Up</div>
           </div>
+          {% if request.user.profile.role == 'seller' %}
           <div class="stat-card">
             <div class="stat-card-label">Active Listings</div>
             <div class="stat-card-val">{{ listings.count|default:"0" }}</div>
             <div class="stat-card-change change-up">↑ Live Auctions</div>
           </div>
           <div class="stat-card">
+            <div class="stat-card-label">Total Sold</div>
+            <div class="stat-card-val gold">₹0</div>
+            <div class="stat-card-change">Pending Sales</div>
+          </div>
+          {% else %}
+          <div class="stat-card">
             <div class="stat-card-label">Your Bids</div>
             <div class="stat-card-val green">{{ my_bids.count|default:"0" }}</div>
-            <div class="stat-card-change">Active participation</div>
+            <div class="stat-card-change">Participation</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-card-label">Won Items</div>
+            <div class="stat-card-val gold">0</div>
+            <div class="stat-card-change">Successful Bids</div>
+          </div>
+          {% endif %}
           <div class="stat-card">
             <div class="stat-card-label">Profile Strength</div>
             <div class="stat-card-val">Verified ★</div>
@@ -633,6 +677,15 @@
       } else {
         showPage('auth');
       }
+
+      // Handle Dashboard Default Tab based on Role
+      {% if request.user.is_authenticated %}
+        const role = "{{ request.user.profile.role }}";
+        if (role === 'bidder') {
+          const bidsTab = document.querySelector('.sidebar-nav-item[onclick*="bids"]');
+          if (bidsTab) switchDashboardTab('bids', bidsTab);
+        }
+      {% endif %}
     });
 
     // Auth Tabs

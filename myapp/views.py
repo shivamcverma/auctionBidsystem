@@ -31,7 +31,13 @@ def signup_view(request):
             first_name=data.get('f_name'),
             last_name=data.get('l_name')
         )
-        messages.success(request, "Account created! Please sign in to continue.")
+        
+        # Create User Profile with Role
+        from myapp.models import UserProfile
+        role = data.get('role', 'bidder')
+        UserProfile.objects.create(user=user, role=role)
+        
+        messages.success(request, f"Account created as {role.capitalize()}! Please sign in.")
         return redirect('/login/?page=auth&tab=login')
     return redirect('login_page')
 
@@ -92,6 +98,10 @@ def login_page(request):
 @login_required
 def place_bid(request, item_id):
     if request.method == "POST":
+        # Check Role
+        if hasattr(request.user, 'profile') and request.user.profile.role != 'bidder':
+            return JsonResponse({'status': 'error', 'message': 'Sellers are not allowed to place bids.'})
+            
         item = get_object_or_404(AuctionItem, id=item_id)
         amount = float(request.POST.get('amount', 0))
         
@@ -121,6 +131,10 @@ def add_product(request):
         description = request.POST.get('description')
         image = request.FILES.get('image')
         
+        if hasattr(request.user, 'profile') and request.user.profile.role != 'seller':
+            messages.error(request, "Only Sellers can list products.")
+            return redirect('index')
+            
         category = get_object_or_404(Category, id=category_id)
         
         AuctionItem.objects.create(

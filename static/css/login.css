@@ -1941,3 +1941,70 @@ nav {
 .toast-icon {
   font-size: 1.2rem;
 }
+
+/* ===================== NEW: ROLE SELECTOR ===================== */
+.role-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  margin-top: 0.8rem;
+}
+
+.role-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.role-tile:hover {
+  border-color: var(--gold-dim);
+  background: rgba(212, 175, 55, 0.05);
+  transform: translateY(-3px);
+}
+
+.role-icon {
+  font-size: 1.8rem;
+  margin-bottom: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.role-text {
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+input[type="radio"]:checked + .role-tile {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+input[type="radio"]:checked + .role-tile .role-text {
+  color: var(--gold);
+}
+
+input[type="radio"]:checked + .role-tile .role-icon {
+  transform: scale(1.2);
+}
+
+input[type="radio"]:checked + .role-tile::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  color: var(--gold);
+  font-size: 0.9rem;
+  font-weight: bold;
+}
